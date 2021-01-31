@@ -197,3 +197,85 @@ def yolo_Res_block(inputs, in_channels):
     net = tf.concat([net, route2], axis=-1)
     net = conv2d(net, in_channels, kernel_size=1)
     return tf.concat([route1, net], axis=-1), net
+
+
+def channel_attention(inputs, ratio=8):
+    kernel_initializer = tf.contrib.layers.variance_scaling_initializer()
+    bias_initializer = tf.constant_initializer(value=0.0)
+
+    channel = inputs.get_shape()[-1]
+    avg_pool = tf.reduce_mean(inputs, axis=[1, 2], keepdims=True)
+
+    avg_pool = tf.layers.dense(inputs=avg_pool,
+                               units=channel // ratio,
+                               activation=tf.nn.relu,
+                               kernel_initializer=kernel_initializer,
+                               bias_initializer=bias_initializer)
+    avg_pool = tf.layers.dense(inputs=avg_pool,
+                               units=channel,
+                               kernel_initializer=kernel_initializer,
+                               bias_initializer=bias_initializer)
+
+    max_pool = tf.reduce_max(inputs, axis=[1, 2], keepdims=True)
+    max_pool = tf.layers.dense(inputs=max_pool,
+                               units=channel // ratio,
+                               activation=tf.nn.relu)
+    max_pool = tf.layers.dense(inputs=max_pool,
+                               units=channel)
+    scale = tf.sigmoid(avg_pool + max_pool, 'sigmoid')
+
+    return inputs * scale
+
+
+def spatial_attention(inputs):
+    kernel_size = 7
+    kernel_initializer = tf.contrib.layers.variance_scaling_initializer()
+    avg_pool = tf.reduce_mean(inputs, axis=[3], keepdims=True)
+    max_pool = tf.reduce_max(inputs, axis=[3], keepdims=True)
+    concat = tf.concat([avg_pool, max_pool], 3)
+
+    concat = tf.layers.conv2d(concat,
+                              filters=1,
+                              kernel_size=[kernel_size, kernel_size],
+                              strides=[1, 1],
+                              padding="same",
+                              activation=None,
+                              kernel_initializer=kernel_initializer,
+                              use_bias=False)
+    concat = tf.sigmoid(concat, 'sigmoid')
+
+    return inputs * concat
+
+
+def CBAM_Res_block(inputs, out_channels):
+    net = conv2d(inputs, out_channels)
+    route1 = net
+    net = channel_attention(net)
+    net = spatial_attention(net)
+    net = tf.concat([net, route1], -1)
+    net = tf.nn.max_pool(net, [2, 2], [2, 2], 'VALID')
+    return net
+
+
+def Squeeze_excitation_layer(inputs, out_dim, ratio):
+    squeeze = tf.keras.layers.GlobalAveragePooling2D()(inputs)
+
+    excitation = tf.layers.dense(inputs=squeeze, units=out_dim / ratio)
+    excitation = tf.nn.relu(excitation)
+    excitation = tf.layers.dense(inputs=excitation, units=out_dim)
+    excitation = tf.nn.sigmoid(excitation)
+
+    excitation = tf.reshape(excitation, [-1, 1, 1, out_dim])
+
+    scale = inputs * excitation
+
+    return scale
+
+
+def SE_Res_block(inputs, out_channels):
+    net = conv2d(inputs, out_channels)
+    route1 = net
+    net = Squeeze_excitation_layer(net, out_channels, 32)
+    net = tf.concat([net, route1], -1)
+    net = tf.nn.max_pool(net, [2, 2], [2, 2], 'VALID')
+    return net
