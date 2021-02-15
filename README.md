@@ -71,6 +71,10 @@ YOLO anchors is placed at `./data/yolo_anchors.txt`, YOLO-Tiny anchors is placed
 
 The yolo anchors computed by the k-means script is on the resized image scale.  The default resize method is the letterbox resize, i.e., keep the original aspect ratio in the resized image.
 
+4.  VOC dataset:
+
+    An example to parse VOC-like dataset is provided: `write_list_voc.py`, which can be used directly to parse VOCdevkit dataset.
+
 ### 5. Training
 
 Run the correspond `train.py` file, continue training from a checkpoint is supported, you may refer to the tensorboard ouput in `./data/logs` .
