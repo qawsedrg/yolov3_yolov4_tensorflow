@@ -22,7 +22,7 @@ Key features:
 - tensorflow1(with tf.data support)
 - opencv-python
 - tqdm
-- tensorlayer
+- tensorlayer1
 
 ### 3. Weights conversion
 
