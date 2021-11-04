@@ -9,13 +9,11 @@ This is a full implementation of YOLOv3, YOLOv4, YOLOv3-Tiny, YOLOv4-Tiny in pur
 
 Key features:
 
--   K-means algorithm to select prior anchor boxes.
-
-- Efficient tf.data multi-threading pipeline
-- tensorlayer accelerated data augmentation, mixup, warm-up, label-smooth, focal-loss, multi-scale
-- .weights to ckpt conversion
-- Extremely fast GPU non maximum supression.
-- ckpt to .pb and demo usage of .pb
+- K-means algorithm to select prior anchor boxes.
+- Efficient tf.data multi-threading data pipeline
+- Tensorlayer accelerated data augmentation, mixup, warm-up, label-smooth, focal-loss, multi-scale
+- Weights conversion : .weights to ckpt, ckpt to .pb and demo usage of .pb
+- Extremely fast GPU non-maximum-supression.
 
 ### 2. Requirements
 
@@ -26,7 +24,7 @@ Key features:
 
 ### 3. Weights conversion
 
-Weights can be downloaded here: 链接: https://pan.baidu.com/s/12Li_AZrZbGAs2642jjeOhw  密码: nkd2
+Weights can be downloaded here: link: https://pan.baidu.com/s/12Li_AZrZbGAs2642jjeOhw  passwaord: nkd2
 
 Place the weights file in the correspond directory in `./data/` and run the correspond conversion script, the converted ckpt file will be saved to the save directory.
 
